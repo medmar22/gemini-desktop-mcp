@@ -315,10 +315,28 @@ class MCPChatApp:
                         if gemini_type_str == 'STRING' and mcp_type == 'object':
                             description += " (Provide as JSON string)"
 
-                        gemini_properties[prop_name] = genai_types.Schema(
-                            type=gemini_type_str,
-                            description=description.strip() or None # Ensure None if empty
-                        )
+                        # Prepare schema arguments
+                        schema_args = {
+                            'type': gemini_type_str,
+                            'description': description.strip() or None
+                        }
+
+                        # **** ADDED LOGIC for ARRAY type ****
+                        if gemini_type_str == 'ARRAY':
+                            # Attempt to get item type from MCP schema, default to STRING
+                            items_schema_dict = prop_schema_dict.get('items', {})
+                            mcp_item_type = items_schema_dict.get('type', 'string').lower() # Default to string if not specified
+                            gemini_item_type_str = type_mapping.get(mcp_item_type)
+                            if gemini_item_type_str:
+                                logger.debug(f"Mapping array item type '{mcp_item_type}' to Gemini '{gemini_item_type_str}' for {prop_name} in {mcp_tool.name}")
+                                schema_args['items'] = genai_types.Schema(type=gemini_item_type_str)
+                            else:
+                                logger.warning(f"Property '{prop_name}' in tool '{mcp_tool.name}' is an array with unmappable item type '{mcp_item_type}'. Defaulting items to STRING.")
+                                schema_args['items'] = genai_types.Schema(type='STRING') # Fallback
+
+                        gemini_properties[prop_name] = genai_types.Schema(**schema_args)
+                        # **** END ADDED LOGIC ****
+
                         valid_properties_found = True
                     else:
                         logger.warning(

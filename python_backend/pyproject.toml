@@ -11,3 +11,6 @@ dependencies = [
     "mcp>=1.5.0",
     "python-dotenv>=1.0.1",
 ]
+
+[tool.setuptools]
+py-modules = ["main", "mcp_chat_app", "mcp_flask_backend"]
