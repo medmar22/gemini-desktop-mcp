@@ -1,0 +1,38 @@
+{
+  "tasks": [
+    {
+      "id": "reply_mode",
+      "name": "Reply Mode",
+      "description": "Draft a reply based on standard procedures.",
+      "markdownFiles": [
+        "tasks_md/reply_master_plan.md",
+        "tasks_md/reply_tone_guidelines.md"
+      ]
+    },
+    {
+      "id": "summarize_mode",
+      "name": "Summarize",
+      "description": "Summarize the previous conversation or provided text.",
+      "markdownFiles": [
+        "tasks_md/summarization_prompt.md"
+      ]
+    },
+    {
+      "id": "debug_code",
+      "name": "Debug Code",
+      "description": "Analyze the provided code snippet for potential bugs.",
+      "markdownFiles": [
+        "tasks_md/debug_code_prompt.md"
+      ]
+    },
+    {
+      "id": "x-mode",
+      "name": "X-Posting",
+      "description": "For posting on Twitter",
+      "markdownFiles": [
+        "tasks_md/imported/x_dynamic_strategy.md",
+        "tasks_md/imported/x_strategy.md"
+      ]
+    }
+  ]
+}

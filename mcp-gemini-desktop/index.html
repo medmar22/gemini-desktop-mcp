@@ -55,6 +55,12 @@
                   d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49 1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" />
               </svg>
             </button>
+            <!-- Add Manage Tasks Button -->
+            <button id="manage-tasks-btn" title="Manage Tasks">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M6 3h12v2H6zm0 4h12v2H6zm0 4h12v2H6zm0 4h8v2H6zm10 0h2v2h-2z"/>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -69,6 +75,9 @@
         <div id="chat-messages">
           <!-- Messages will appear here -->
         </div>
+        <!-- Task Buttons Container -->
+        <div id="task-buttons-container" class="task-buttons-container"></div>
+        <!-- End Task Buttons Container -->
         <div class="input-area">
           <textarea
             id="message-input"
@@ -85,6 +94,72 @@
         </div>
       </div>
     </div>
+
+    <!-- Task Management Modal -->
+    <div id="task-management-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Manage Tasks</h2>
+          <button id="close-task-modal-btn" class="close-button">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="task-management-list">
+            <!-- Task list will be populated here -->
+            <p>Loading tasks...</p>
+          </div>
+
+          <!-- Add/Edit Task Form (Initially Hidden) -->
+          <div id="task-edit-form-container" style="display: none;">
+            <h3 id="task-form-title">Add New Task</h3>
+            <form id="task-edit-form">
+              <input type="hidden" id="task-edit-id" /> <!-- For storing ID when editing -->
+              <div class="form-group">
+                <label for="task-edit-name">Task Name:</label>
+                <input type="text" id="task-edit-name" required />
+              </div>
+              <div class="form-group">
+                  <label for="task-edit-id-new">Task ID (unique, no spaces):</label>
+                  <input type="text" id="task-edit-id-new" required />
+              </div>
+              <div class="form-group">
+                <label for="task-edit-description">Description:</label>
+                <textarea id="task-edit-description"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="task-edit-markdownFiles">Markdown Files (Drag to reorder):</label>
+                <div id="task-markdown-files-list" class="markdown-file-list"></div>
+                <button type="button" id="add-markdown-file-btn" class="button-small">+ Add File</button>
+              </div>
+              <div class="form-actions">
+                <button type="submit" id="save-task-btn">Save Task</button>
+                <button type="button" id="cancel-edit-task-btn">Cancel</button>
+              </div>
+            </form>
+          </div>
+          <!-- End Add/Edit Task Form -->
+
+          <!-- Markdown Editor (Initially Hidden) -->
+          <div id="markdown-editor-container" style="display: none;">
+            <h3 id="markdown-editor-title">Edit Markdown File</h3>
+            <div class="form-group">
+                 <label for="markdown-edit-area">Content:</label>
+                 <textarea id="markdown-edit-area" rows="15"></textarea>
+            </div>
+             <div class="form-actions">
+                <button type="button" id="save-markdown-btn">Save Content</button>
+                <button type="button" id="close-markdown-editor-btn">Close Editor</button>
+            </div>
+          </div>
+          <!-- End Markdown Editor -->
+
+          <div class="modal-actions">
+             <button id="add-new-task-btn">Add New Task</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Task Management Modal -->
+
     <script
       type="module"
       src="renderer.js"></script>
