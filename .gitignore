@@ -4,3 +4,13 @@ python_backend/.venv
 python_backend/.env
 python_backend/uv.lock
 mcp-gemini-desktop/dist/
+
+# Python cache/build files
+__pycache__/
+*.py[oc]
+python_backend/build/
+python_backend/dist/
+python_backend/wheels/
+python_backend/*.egg-info
+
+tasks_md/imported
