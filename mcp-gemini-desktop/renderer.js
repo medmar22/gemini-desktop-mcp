@@ -10,6 +10,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   const serverList = document.getElementById("server-list");
   const settingsBtn = document.getElementById("settings-btn");
   const taskButtonsContainer = document.getElementById("task-buttons-container");
+  // Add reference to the new current task display area
+  const currentTaskDisplay = document.getElementById("current-task-display"); // New UI element
+  const currentTaskNameEl = document.getElementById("current-task-name"); // Element to show task name
+  const currentTaskClearBtn = document.getElementById("current-task-clear-btn"); // Button to clear task
+  const currentTaskExpandBtn = document.getElementById("current-task-expand-btn"); // Expand/collapse button
+  const currentTaskContentArea = document.getElementById("current-task-content-area"); // Area for task content
+  const currentTaskHeader = document.querySelector(".current-task-header"); // Header area for click listener
   // Add Task Management Modal Elements
   const manageTasksBtn = document.getElementById("manage-tasks-btn");
   const taskManagementModal = document.getElementById("task-management-modal");
@@ -38,7 +45,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let pythonPort = null;
   let serverRefreshInterval = null;
-  let currentMarkdownFileEditing = null; // Store path being edited
+  let currentChatId = null; // Added for potential future use
+  let currentTaskContext = null; // Variable to store the active task { id, name, content }
   let previousModalView = 'list'; // Track view before opening editor ('list' or 'form')
 
   function renderLaTeX(text) {
@@ -181,6 +189,50 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // --- Helper Functions defined at the correct scope ---
+
+  // Function to update the display of the currently selected task
+  function updateCurrentTaskDisplay() {
+      if (currentTaskContext) {
+          currentTaskNameEl.textContent = currentTaskContext.name;
+          currentTaskDisplay.style.display = 'flex'; // Use flex instead of block
+          // Ensure content area is populated if it was previously expanded
+          if (currentTaskDisplay.classList.contains('expanded')) {
+             currentTaskContentArea.innerText = currentTaskContext.content; // Use innerText to preserve whitespace
+          } else {
+             currentTaskContentArea.innerText = ''; // Clear content if collapsed
+          }
+      } else {
+          currentTaskNameEl.textContent = '';
+          currentTaskContentArea.innerText = ''; // Clear content
+          currentTaskDisplay.classList.remove('expanded'); // Ensure collapsed
+          currentTaskDisplay.style.display = 'none'; // Hide the display area
+      }
+      // TODO: Add logic to show/hide full task content on click/expand
+  }
+
+  // Function to clear the current task
+  function clearCurrentTask() {
+    console.log("Clearing current task");
+    currentTaskContext = null;
+    updateCurrentTaskDisplay(); // This will hide and reset the display
+  }
+
+  // Function to toggle task content visibility
+  function toggleTaskContent() {
+      if (!currentTaskContext) return; // No task active
+
+      currentTaskDisplay.classList.toggle('expanded');
+
+      if (currentTaskDisplay.classList.contains('expanded')) {
+          // Populate content when expanding
+          currentTaskContentArea.innerText = currentTaskContext.content; // Use innerText
+          // Scroll content area to top if needed
+          currentTaskContentArea.scrollTop = 0;
+      } else {
+          // Clear content when collapsing (optional, but cleaner)
+          // currentTaskContentArea.innerText = '';
+      }
+  }
 
   // Function to adjust textarea height based on content
   function adjustTextareaHeight() {
@@ -335,19 +387,46 @@ document.addEventListener("DOMContentLoaded", async () => {
   // --- End Helper Functions ---
 
   async function sendMessage() {
-    const message = messageInput.value.trim();
-    if (!message || !pythonPort) {
+    const userMessage = messageInput.value.trim();
+    // Check if there's a user message OR a task context (allow sending just the task)
+    if ((!userMessage && !currentTaskContext) || !pythonPort) {
       if (!pythonPort) {
         addMessage("Error: Backend not connected.", "system");
       }
+      // Maybe add a message if trying to send empty with no task?
+      // else if (!userMessage && !currentTaskContext) {
+      //    addMessage("Type a message or select a task first.", "system");
+      // }
       return;
     }
-addMessage(message, "user");
-messageInput.value = "";
-messageInput.style.height = "auto"; // Reset height after sending
 
-// Add a temporary loading message for AI response
-const loadingMessageDiv = addMessage("...", "ai-loading"); // Use valid class name
+    let messageToSend = userMessage;
+
+    // Prepend task context if it exists
+    if (currentTaskContext) {
+        const taskHeader = `## MASTER TASK GUIDE (${currentTaskContext.name}) ##`;
+        const userHeader = "## USER MESSAGE ##";
+        // If user also typed a message, include both headers and content
+        if (userMessage) {
+             messageToSend = `${taskHeader}\n${currentTaskContext.content}\n\n${userHeader}\n${userMessage}`;
+        } else {
+            // If only task is active, just send the task content with its header
+            messageToSend = `${taskHeader}\n${currentTaskContext.content}`;
+            // Add a placeholder in the chat history for clarity
+            addMessage(`[Sending Task: ${currentTaskContext.name}]`, "user task-indicator"); // Add specific class
+        }
+    }
+
+    // Add user message to chat only if they typed something
+    if (userMessage) {
+        addMessage(userMessage, "user");
+    }
+
+    messageInput.value = "";
+    messageInput.style.height = "auto"; // Reset height after sending
+
+    // Add a temporary loading message for AI response
+    const loadingMessageDiv = addMessage("...", "ai-loading"); // Use valid class name
 
     try {
       const response = await fetch(`http://127.0.0.1:${pythonPort}/chat`, {
@@ -355,7 +434,8 @@ const loadingMessageDiv = addMessage("...", "ai-loading"); // Use valid class na
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({message: message}),
+        // Send the potentially combined message
+        body: JSON.stringify({message: messageToSend}),
       });
       if (!response.ok) {
         const errorData = await response
@@ -553,10 +633,18 @@ const loadingMessageDiv = addMessage("...", "ai-loading"); // Use valid class na
   // --- Task Handling ---
   async function handleTaskButtonClick(taskId) {
     console.log("Task button clicked:", taskId);
-    // Add message indicating which task is being loaded
-    const taskButton = taskButtonsContainer.querySelector(`[data-task-id="${taskId}"]`);
+    const taskButton = taskButtonsContainer.querySelector(`[data-task-id=\"${taskId}\"]`);
     const taskName = taskButton ? taskButton.textContent : taskId;
-    const loadingMsg = addMessage(`Loading task: ${taskName}...`, "system");
+    const loadingMsg = addMessage(`Loading task context: ${taskName}...`, "system");
+
+    // If the same task is clicked again, clear it instead of loading
+    if (currentTaskContext && currentTaskContext.id === taskId) {
+        clearCurrentTask();
+        if (loadingMsg) loadingMsg.remove();
+        // Optionally, visually deselect the button
+        document.querySelectorAll('.task-button.selected').forEach(btn => btn.classList.remove('selected'));
+        return;
+    }
 
     try {
       const response = await fetch(`http://127.0.0.1:${pythonPort}/tasks/${taskId}/content`);
@@ -567,27 +655,38 @@ const loadingMessageDiv = addMessage("...", "ai-loading"); // Use valid class na
       const data = await response.json();
 
       if (data.status === 'success') {
-        console.log(`Received content for task ${taskId}:`, data.content.substring(0, 100) + "..."); // Log snippet
-        messageInput.value = data.content; // Set textarea value to fetched content
-        adjustTextareaHeight(); // *** Now calls the defined function ***
-        messageInput.focus(); // Focus the input area
+        console.log(`Set active task context ${taskId}:`, data.content.substring(0, 100) + "..."); // Log snippet
+
+        // Store task context instead of putting in input
+        currentTaskContext = {
+            id: taskId,
+            name: taskName,
+            content: data.content
+        };
+
+        updateCurrentTaskDisplay(); // Update the new UI element
+
         // Remove the loading message on success
         if (loadingMsg) loadingMsg.remove();
+
+        // Visually indicate selection (optional)
+        document.querySelectorAll('.task-button.selected').forEach(btn => btn.classList.remove('selected'));
+        if (taskButton) taskButton.classList.add('selected');
+
       } else {
         throw new Error(data.message || `Backend failed to get content for task ${taskId}`);
       }
 
     } catch (error) {
       console.error(`Error handling task button click for ${taskId}:`, error);
+      // Clear context on error
+      clearCurrentTask();
       // Update the loading message to show the error
       if (loadingMsg) {
         updateMessageContent(loadingMsg, `Error loading task ${taskName}: ${error.message}`, "system error");
       } else {
         addMessage(`Error loading task ${taskName}: ${error.message}`, "system error");
       }
-      // Clear the input just in case
-      // messageInput.value = '';
-      // adjustTextareaHeight();
     }
   }
 
@@ -1344,7 +1443,18 @@ const loadingMessageDiv = addMessage("...", "ai-loading"); // Use valid class na
           closeTaskManagementModal();
       }
   });
-  // *** End Event Listeners Setup ***
+
+  // Task Context Display listeners
+  if (currentTaskClearBtn) {
+      currentTaskClearBtn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent toggle when clicking clear button
+          clearCurrentTask();
+      });
+  }
+  // Use the header for toggling expand/collapse
+  if (currentTaskHeader) {
+    currentTaskHeader.addEventListener('click', toggleTaskContent);
+  }
 
   initializeApp(); // Call initializeApp after all functions and listeners are defined
 

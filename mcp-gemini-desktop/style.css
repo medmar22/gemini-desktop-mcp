@@ -611,6 +611,135 @@ body {
     padding: 5px;
 }
 
+/* Style for the currently selected task button */
+.task-button.selected {
+    background-color: var(--accent-color);
+    color: var(--user-message-text);
+    border-color: var(--accent-color);
+    font-weight: bold;
+}
+
+/* Style for the task indicator in user messages */
+.message.user.task-indicator {
+    font-style: italic;
+    color: var(--text-secondary);
+    background-color: transparent; /* Or a subtle background */
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-right: 5px; /* Adjust as needed */
+    align-self: flex-end; /* Keep it right-aligned like user messages */
+}
+
+/* Current Task Display Area Styles */
+.current-task-display {
+    padding: 0; /* Remove padding, handle in children */
+    background-color: var(--sidebar-bg); /* Match sidebar/input area */
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column; /* Stack header and content */
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    transition: max-height 0.3s ease-out;
+    overflow: hidden; /* Needed for smooth expand/collapse */
+    max-height: 40px; /* Adjust to fit header height */
+}
+
+.current-task-display.expanded {
+    max-height: 300px; /* Adjust as needed, allows content to show */
+}
+
+.current-task-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px; /* Restore padding here */
+    cursor: pointer; /* Make header clickable to toggle */
+    flex-shrink: 0; /* Prevent header from shrinking */
+    min-height: 24px; /* Ensure header has minimum height */
+}
+
+.current-task-expand-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 6px 0 0;
+    margin-right: 4px;
+    color: var(--text-secondary);
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+}
+
+.current-task-expand-btn svg {
+    fill: currentColor;
+}
+
+.current-task-expand-btn .icon-collapse {
+    display: none;
+}
+.current-task-expand-btn .icon-expand {
+    display: block;
+}
+
+.current-task-display.expanded .current-task-expand-btn .icon-collapse {
+    display: block;
+}
+.current-task-display.expanded .current-task-expand-btn .icon-expand {
+    display: none;
+}
+
+.current-task-label {
+    font-weight: bold;
+    margin-right: 8px;
+    color: var(--text-primary);
+    opacity: 1;
+}
+
+.current-task-name {
+    flex-grow: 1;
+    margin-right: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-style: italic;
+}
+
+.current-task-clear-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.4em;
+    line-height: 1;
+    padding: 0 4px;
+    opacity: 0.7;
+}
+
+.current-task-clear-btn:hover {
+    color: var(--status-error);
+    opacity: 1;
+}
+
+.current-task-content-area {
+    padding: 10px 15px 15px 35px; /* Indent content slightly */
+    border-top: 1px dashed var(--border-color); /* Separator */
+    margin-top: 5px;
+    font-size: 0.95em; /* Slightly larger for readability */
+    color: var(--text-primary);
+    overflow-y: auto; /* Scroll if content exceeds max-height */
+    max-height: calc(300px - 50px); /* Adjust based on expanded max-height and header height */
+    white-space: pre-wrap; /* Preserve whitespace and wrap lines */
+    word-wrap: break-word;
+    line-height: 1.5;
+    display: none; /* Hidden by default, shown when expanded */
+}
+
+.current-task-display.expanded .current-task-content-area {
+    display: block;
+}
+
+/* --- End Current Task Display Area Styles --- */
+
 /* Ensure textarea resizes correctly with tasks above */
 .input-area {
   /* Adjust styles if necessary based on task container */

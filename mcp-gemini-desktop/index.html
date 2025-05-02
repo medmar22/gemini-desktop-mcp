@@ -78,6 +78,24 @@
         <!-- Task Buttons Container -->
         <div id="task-buttons-container" class="task-buttons-container"></div>
         <!-- End Task Buttons Container -->
+
+        <!-- Current Task Display Area -->
+        <div id="current-task-display" class="current-task-display" style="display: none;">
+            <div class="current-task-header">
+                <button id="current-task-expand-btn" class="current-task-expand-btn" title="Show/Hide Task Content">
+                    <svg class="icon-expand" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>
+                    <svg class="icon-collapse" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
+                </button>
+                <span class="current-task-label">Active Task:</span>
+                <span id="current-task-name" class="current-task-name"></span>
+                <button id="current-task-clear-btn" class="current-task-clear-btn" title="Clear active task">&times;</button>
+            </div>
+            <div id="current-task-content-area" class="current-task-content-area">
+                <!-- Task content will be loaded here -->
+            </div>
+        </div>
+        <!-- End Current Task Display Area -->
+
         <div class="input-area">
           <textarea
             id="message-input"
